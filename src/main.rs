@@ -1,44 +1,61 @@
 extern crate fsa;
 
-use fsa::trie::{Trie};
+use clap::{AppSettings, Clap};
+
+use std::{io::{BufRead, BufReader}};
+use std::fs::File;
+
 use fsa::config::K_NOT_FOUND;
+use fsa::trie::Trie;
+
+#[derive(Clap)]
+#[clap(version = "0.1", author = "Fumiyuki K. <fumilemon79@gmail.com>")]
+#[clap(setting = AppSettings::ColoredHelp)]
+struct Opts {
+    /// Sets input file name. Server data
+    #[clap(short, long, default_value = "input.csv")]
+    server_input_file: String,
+
+    /// Sets input file name. Client data
+    #[clap(short, long, default_value = "input.csv")]
+    client_input_file: String,
+}
+
+pub fn read_trajectory_hash_from_csv(filename: &str) -> Vec<Vec<u8>> {
+    let file = File::open(filename).expect("file open error");
+    let reader = BufReader::new(file);
+    let mut hash_vec = Vec::new();
+    for line in reader.lines().into_iter() {
+        if let Ok(hash) = line {
+            hash_vec.push(hash.as_bytes().to_vec());
+        }
+    }
+    hash_vec
+}
 
 fn main() {
-    let a = vec![48, 49];
-    let b = vec![49, 49];
-    let c = vec![49, 50, 54];
-    let d = vec![50, 50, 54, 55, 56, 57];
-    let keys: Vec<&[u8]> = vec![a.as_slice(), b.as_slice(), c.as_slice(), d.as_slice()];
-    let fsa = Trie::new(&keys);
+    let opts: Opts = Opts::parse();
+    
+    
+    let mut server_data = read_trajectory_hash_from_csv(opts.server_input_file.as_str());
+    server_data.sort();
+    let fsa = Trie::new(&server_data);
 
-    println!("[searching]");
-    for key in keys.iter() {
+    let client_data = read_trajectory_hash_from_csv(opts.client_input_file.as_str());
+
+    let mut not_found = 0;
+    let mut found = 0;
+
+    for key in client_data.iter() {
         let key_id = fsa.exact_search(key);
         if key_id == K_NOT_FOUND {
-            println!(" - {:?}: Not Found", *key);
+            not_found += 1;
         } else {
-            println!(" - {:?}: {}", *key, key_id);
+            println!("key {:?}", key);
+            found += 1;
         }
     }
-
-    let not_exist_item_a = vec![48, 49, 50];
-    let not_exist_item_b = vec![100, 55, 0];
-    let not_exist_item_c = vec![0, 0, 0, 0, 0, 0, 0];
-    let not_exist_item_d = vec![255, 255, 255, 255, 255, 255, 255];
-    let not_exist_keys: Vec<&[u8]> = vec![
-        not_exist_item_a.as_slice(),
-        not_exist_item_b.as_slice(),
-        not_exist_item_c.as_slice(),
-        not_exist_item_d.as_slice(),
-    ];
-    for key in not_exist_keys.iter() {
-        let key_id = fsa.exact_search(key);
-        if key_id == K_NOT_FOUND {
-            println!(" - {:?}: Not Found", *key);
-        } else {
-            println!(" - {:?}: {}", *key, key_id);
-        }
-    }
+    println!("not found: {}, found: {}", not_found, found);
     
     println!("ok.")
 }

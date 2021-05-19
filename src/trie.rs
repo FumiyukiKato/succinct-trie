@@ -17,7 +17,7 @@ struct Suffix {
 }
 
 impl Trie {
-    pub fn new(keys: &Vec<&fsa_key_t>) -> Self {
+    pub fn new(keys: &Vec<Vec<u8>>) -> Self {
         let include_dense = K_INCLUDE_DENSE;
         let sparse_dense = K_SPARSE_DENSE_RATIO;
 
@@ -42,7 +42,7 @@ impl Trie {
                 continue;
             }
 
-            let (key_id, level) = Trie::traverse(&louds_dense, &louds_sparse, keys[i]);
+            let (key_id, level) = Trie::traverse(&louds_dense, &louds_sparse, keys[i].as_slice());
             assert!(key_id < num_keys);
             let contents = keys[i][level..].to_vec();
             suffix_builder[key_id] = Suffix { contents };

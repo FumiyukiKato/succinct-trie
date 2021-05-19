@@ -106,7 +106,7 @@ impl Builder {
         &self.louds_bits
     }
 
-    pub fn build(&mut self, keys: &Vec<&fsa_key_t>) {
+    pub fn build(&mut self, keys: &Vec<Vec<u8>>) {
         self.build_sparse(keys);
         if self.include_dense {
             self.determine_cutoff_level();
@@ -114,19 +114,19 @@ impl Builder {
         }
     }
 
-    fn build_sparse(&mut self, keys: &Vec<&fsa_key_t>) {
+    fn build_sparse(&mut self, keys: &Vec<Vec<u8>>) {
         let mut i = 0;
         while i < keys.len() {
-            let mut level: level_t = self.skip_common_prefix(keys[i]);
+            let mut level: level_t = self.skip_common_prefix(keys[i].as_slice());
             let curpos = i;
-            while (i + 1 < keys.len()) && Builder::is_same_key(keys[curpos], keys[i + 1]) {
+            while (i + 1 < keys.len()) && Builder::is_same_key(keys[curpos].as_slice(), keys[i + 1].as_slice()) {
                 i += 1;
             }
             if i < keys.len() - 1 {
                 level =
-                    self.insert_key_bytes_to_trie_until_unique(keys[curpos], keys[i + 1], level);
+                    self.insert_key_bytes_to_trie_until_unique(keys[curpos].as_slice(), keys[i + 1].as_slice(), level);
             } else {
-                level = self.insert_key_bytes_to_trie_until_unique(keys[curpos], &[], level);
+                level = self.insert_key_bytes_to_trie_until_unique(keys[curpos].as_slice(), &[], level);
             }
             // suffixだけ別で管理したいのでnext_keyと比較している
             // TODO: FSAにするならここを変える必要がありそう，同じsuffixがすでにあれば
