@@ -122,6 +122,7 @@ impl Trie {
         if length != suffix.len() {
             return K_NOT_FOUND
         }
+
         for (cur_key, cur_suf) in key[level..].iter().zip(suffix.iter()) {
             if cur_key != cur_suf {
                 return K_NOT_FOUND

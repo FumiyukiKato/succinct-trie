@@ -23,7 +23,6 @@ mod tests {
 
     #[test]
     fn contains_check() {
-        println!("start@");
         let a = vec![48, 49];
         let b = vec![49, 49];
         let c = vec![49, 50, 54];

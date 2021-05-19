@@ -101,7 +101,7 @@ impl LoudsSparse {
                 return (K_NOT_FOUND, level) 
             }
             if !self.child_indicator_bits.get_bitvec().read_bit(pos) {
-                return (self.get_suffix_pos(pos) + self.value_count_dense, key.len())
+                return (self.get_suffix_pos(pos) + self.value_count_dense, level + 1)
             }
             node_num = self.get_child_node_num(pos);
             pos = self.get_first_label_pos(node_num);
