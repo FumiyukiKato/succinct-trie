@@ -56,5 +56,6 @@ fn main() {
     }
     println!("Trie not found: {}, found: {}", not_found, found);
     
-    println!("ok.")
+    println!("done.")
+    
 }
