@@ -1,6 +1,6 @@
 ## succinct-trie
 
-used in https://github.com/ylab-public/PCT
+(used in trajectory-based PCT)[https://github.com/ylab-public/PCT]
 
 see 
 - SURF [SIGMOD'18] http://www.cs.cmu.edu/~huanche1/publications/surf_paper.pdf
