@@ -1,4 +1,5 @@
-## succinct-trie
+# succinct-trie
+[![Build Status](https://travis-ci.org/FumiyukiKato/succinct-trie.svg?branch=main)](https://travis-ci.org/FumiyukiKato/succinct-trie)
 
 [used in trajectory-based PCT](https://github.com/ylab-public/PCT)
 
