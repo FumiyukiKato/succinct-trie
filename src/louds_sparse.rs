@@ -89,7 +89,7 @@ impl LoudsSparse {
         self.height
     }
 
-    pub fn find_key(&self, key: &fsa_key_t, in_node_num: level_t) -> (position_t, level_t) {
+    pub fn find_key(&self, key: &key_t, in_node_num: level_t) -> (position_t, level_t) {
         let mut node_num = in_node_num;
         let mut pos = self.get_first_label_pos(node_num);
 

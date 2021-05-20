@@ -28,9 +28,9 @@ mod tests {
         let c = vec![49, 50, 54];
         let d = vec![50, 50, 54, 55, 56, 57];
         let keys: Vec<Vec<u8>> = vec![a, b, c, d];
-        let fsa = Trie::new(&keys);
+        let trie = Trie::new(&keys);
         for key in keys.iter() {
-            let key_id = fsa.exact_search(key.as_slice());
+            let key_id = trie.exact_search(key.as_slice());
             println!("key_id: {}", key_id);
             assert_ne!(key_id, K_NOT_FOUND);
         }
@@ -46,7 +46,7 @@ mod tests {
             not_exist_item_d.as_slice(),
         ];
         for key in not_exist_keys.iter() {
-            let key_id = fsa.exact_search(key);
+            let key_id = trie.exact_search(key);
             println!("key_id: {}", K_NOT_FOUND);
             assert_eq!(key_id, K_NOT_FOUND);
         }

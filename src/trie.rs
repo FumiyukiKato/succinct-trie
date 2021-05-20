@@ -99,7 +99,7 @@ impl Trie {
     fn traverse(
         louds_dense: &LoudsDense,
         louds_sparse: &LoudsSparse,
-        key: &fsa_key_t,
+        key: &key_t,
     ) -> (position_t, level_t) {
         let ret = louds_dense.find_key(key);
         if ret.0 != K_NOT_FOUND {
@@ -111,7 +111,7 @@ impl Trie {
         return (ret.0, ret.1);
     }
 
-    pub fn exact_search(&self, key: &fsa_key_t) -> position_t {
+    pub fn exact_search(&self, key: &key_t) -> position_t {
         let (key_id, level) = Trie::traverse(&self.louds_dense, &self.louds_sparse, key);
         if key_id == K_NOT_FOUND {
             return K_NOT_FOUND

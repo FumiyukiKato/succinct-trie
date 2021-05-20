@@ -136,7 +136,7 @@ impl Builder {
     }
 
     // 1つ前のprefixと比較している
-    fn skip_common_prefix(&mut self, key: &fsa_key_t) -> level_t {
+    fn skip_common_prefix(&mut self, key: &key_t) -> level_t {
         let mut level: level_t = 0;
         while level < key.len() && self.is_char_common_prefix(key[level], level) {
             let pos = self.get_num_items(level) - 1;
@@ -162,14 +162,14 @@ impl Builder {
         self.labels[level].len()
     }
 
-    fn is_same_key(a: &fsa_key_t, b: &fsa_key_t) -> bool {
+    fn is_same_key(a: &key_t, b: &key_t) -> bool {
         a == b
     }
 
     fn insert_key_bytes_to_trie_until_unique(
         &mut self,
-        key: &fsa_key_t,
-        next_key: &fsa_key_t,
+        key: &key_t,
+        next_key: &key_t,
         start_level: level_t,
     ) -> level_t {
         let mut level: level_t = start_level;

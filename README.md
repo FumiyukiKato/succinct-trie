@@ -1,1 +1,1 @@
-## FSA
+## succinct-trie

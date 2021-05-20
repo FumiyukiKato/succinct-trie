@@ -49,7 +49,7 @@ impl LoudsDense {
         }
     }
 
-    pub fn find_key(&self, key: &fsa_key_t) -> (position_t, level_t, position_t) {
+    pub fn find_key(&self, key: &key_t) -> (position_t, level_t, position_t) {
         let mut node_num: position_t = 0;
         let mut out_node_num = K_NOT_FOUND;
 

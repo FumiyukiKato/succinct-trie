@@ -1,12 +1,12 @@
-extern crate fsa;
+extern crate succinct_trie;
 
 use clap::{AppSettings, Clap};
 
 use std::{io::{BufRead, BufReader}};
 use std::fs::File;
 
-use fsa::config::K_NOT_FOUND;
-use fsa::trie::Trie;
+use succinct_trie::config::K_NOT_FOUND;
+use succinct_trie::trie::Trie;
 
 #[derive(Clap)]
 #[clap(version = "0.1", author = "Fumiyuki K. <fumilemon79@gmail.com>")]
@@ -39,7 +39,7 @@ fn main() {
     let mut server_data = read_trajectory_hash_from_csv(opts.server_input_file.as_str());
 
     server_data.sort();
-    let fsa = Trie::new(&server_data);
+    let trie = Trie::new(&server_data);
 
     let client_data = read_trajectory_hash_from_csv(opts.client_input_file.as_str());
 
@@ -48,7 +48,7 @@ fn main() {
     let mut found = 0;
 
     for key in client_data.iter() {
-        if fsa.exact_search(key) != K_NOT_FOUND {
+        if trie.exact_search(key) != K_NOT_FOUND {
             found += 1;
         } else {
             not_found += 1;

@@ -13,7 +13,7 @@ pub type label_t = u8;
 #[allow(non_camel_case_types)]
 pub type node_t = u8;
 #[allow(non_camel_case_types)]
-pub type fsa_key_t = [node_t];
+pub type key_t = [node_t];
 
 
 pub const K_MSB_MASK: word_t = 0x8000000000000000; // 1000000000000000000000000000000000000000000000000000000000000000

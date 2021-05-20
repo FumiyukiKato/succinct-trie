@@ -1,5 +1,5 @@
 [package]
-name = "fsa"
+name = "succinct-trie"
 version = "0.1.0"
 authors = ["FumiyukiKato <fumilemon79@gmail.com>"]
 edition = "2018"
