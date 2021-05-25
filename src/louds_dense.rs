@@ -1,4 +1,5 @@
 use crate::builder::Builder;
+use crate::cache::Cache;
 use crate::config::*;
 use crate::rank::BitvectorRank;
 
@@ -78,6 +79,36 @@ impl LoudsDense {
         out_node_num = node_num;
         return (K_NOT_FOUND, self.height, out_node_num)
     }
+
+    // pub fn find_key_with_cache(&self, key: &key_t, cache: Cache, diff_level: level_t) -> (position_t, level_t, position_t) {
+    //     let mut node_num: position_t = cache.get_pos(diff_level);
+    //     let mut out_node_num = cache.get_pos(diff_level);
+
+    //     for level in diff_level..self.height {
+    //         let mut pos = node_num * K_NODE_FANOUT;
+    //         if level >= key.len() {
+    //             if self.prefixkey_indicator_bits.get_bitvec().read_bit(node_num) {
+    //                 return (self.get_suffix_pos(pos, true), level, out_node_num)
+    //             } else {
+    //                 return (K_NOT_FOUND, level, out_node_num)
+    //             }
+    //         }
+    //         pos += key[level] as level_t;
+    //         self.child_indicator_bitmaps.prefetch(pos);
+            
+    //         if !self.label_bitmaps.get_bitvec().read_bit(pos) {
+    //             return (K_NOT_FOUND, level + 1, out_node_num)
+    //         }
+
+    //         if !self.child_indicator_bitmaps.get_bitvec().read_bit(pos) {
+    //             return (self.get_suffix_pos(pos, false), level + 1, out_node_num)
+    //         }
+
+    //         node_num = self.get_child_node_num(pos);
+    //     }
+    //     out_node_num = node_num;
+    //     return (K_NOT_FOUND, self.height, out_node_num)
+    // }
 
     fn get_suffix_pos(&self, pos: position_t, is_prefix_key: bool) -> position_t {
         let node_num: position_t = pos / K_NODE_FANOUT;

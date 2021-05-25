@@ -1,4 +1,5 @@
 use crate::builder::Builder;
+use crate::cache::Cache;
 use crate::config::*;
 use crate::label_vector::LabelVector;
 use crate::rank::BitvectorRank;
@@ -89,6 +90,10 @@ impl LoudsSparse {
         self.height
     }
 
+    pub fn get_start_level(&self) -> level_t {
+        self.start_level
+    }
+
     pub fn find_key(&self, key: &key_t, in_node_num: level_t) -> (position_t, level_t) {
         let mut node_num = in_node_num;
         let mut pos = self.get_first_label_pos(node_num);
@@ -112,6 +117,30 @@ impl LoudsSparse {
         }
         return (K_NOT_FOUND, key.len())
     }
+
+    // pub fn find_key_with_cache(&self, key: &key_t, in_node_num: level_t, cache: Cache, diff_level: level_t) -> (position_t, level_t) {
+    //     let mut node_num = in_node_num;
+    //     let mut pos = self.get_first_label_pos(node_num);
+
+    //     for level in self.start_level..key.len() {
+    //         self.child_indicator_bits.prefetch(pos);
+    //         let (res, updated_pos) = self.labels.search(key[level], pos, self.node_size(pos));
+    //         pos = updated_pos;
+    //         if !res { 
+    //             return (K_NOT_FOUND, level) 
+    //         }
+    //         if !self.child_indicator_bits.get_bitvec().read_bit(pos) {
+    //             return (self.get_suffix_pos(pos) + self.value_count_dense, level + 1)
+    //         }
+    //         node_num = self.get_child_node_num(pos);
+    //         pos = self.get_first_label_pos(node_num);
+    //     }
+
+    //     if self.labels.read(pos) == K_TERMINATOR && !self.child_indicator_bits.get_bitvec().read_bit(pos) {
+    //         return (self.get_suffix_pos(pos) + self.value_count_dense, key.len())
+    //     }
+    //     return (K_NOT_FOUND, key.len())
+    // }
 
     fn get_first_label_pos(&self, node_num: position_t) -> position_t {
         self.louds_bits.select(node_num + 1 - self.node_count_dense)

@@ -111,8 +111,22 @@ impl Trie {
         return (ret.0, ret.1);
     }
 
+    fn _traverse(
+        &self,
+        key: &key_t,
+    ) -> (position_t, level_t) {
+        let ret = self.louds_dense.find_key(key);
+        if ret.0 != K_NOT_FOUND {
+            return (ret.0, ret.1);
+        }
+        if ret.2 != K_NOT_FOUND {
+            return self.louds_sparse.find_key(key, ret.2);
+        }
+        return (ret.0, ret.1);
+    }
+
     pub fn exact_search(&self, key: &key_t) -> position_t {
-        let (key_id, level) = Trie::traverse(&self.louds_dense, &self.louds_sparse, key);
+        let (key_id, level) = self._traverse(key);
         if key_id == K_NOT_FOUND {
             return K_NOT_FOUND
         }
@@ -130,4 +144,174 @@ impl Trie {
         }
         return key_id
     }
+
+    // // 見つかったかどうか，直前の探索のログを返したい．
+    // fn caching_search(&self, previous_key: &key_t, key: &key_t, cache: Cache) -> position_t {
+    //     let diff_level = self.find_different_level(previous_key, key);
+    //     let (key_id, level) = 
+    //         if diff_level < self.louds_sparse.get_start_level() {
+    //             let ret = self.louds_dense.find_key_with_cache(key, cache, diff_level);
+    //             if ret.0 != K_NOT_FOUND {
+    //                 (ret.0, ret.1)
+    //             } else if ret.2 != K_NOT_FOUND {
+    //                 self.louds_sparse.find_key_with_cache(key, ret.2, cache, diff_level)
+    //             } else {
+    //                 (ret.0, ret.1)
+    //             }
+    //         } else {
+    //             self.louds_sparse.find_key_with_cache(key, 0, cache, diff_level)
+    //         };
+        
+    // }
+
+    // fn find_different_level(&self, pre_key: &key_t, key: &key_t) -> level_t {
+    //     let mut diff_level = 0;
+    //     for (p, k) in pre_key.iter().zip(key) {
+    //         if p != k {
+    //             return diff_level
+    //         } else {
+    //             diff_level += 1;
+    //         }
+    //     }
+    //     return diff_level
+    // }
+
+    // time_range is depends on encoding specification
+    pub fn doe_search(&self, time_range: usize, keys: &Vec<Vec<u8>>) -> bool {
+        let mut sequnce_count = 0;
+        let th = TrajectoryHash::new(7, 20, 16);
+        for key in keys.iter() {
+            // let result = self.exact_search(&key);
+            // let is_find = result != K_NOT_FOUND;
+            let is_find = self.accurate_search(key, &th);
+            if is_find {
+                sequnce_count += 1;
+                if sequnce_count >= time_range {
+                    return true
+                }
+            } else {
+                sequnce_count = 0;
+            }
+        }
+        return false
+    }
+
+    pub fn accurate_search(&self, key: &key_t, th: &TrajectoryHash) -> bool {
+        let neighbors = self.get_neighbors(key, th);
+        for nei in neighbors {
+            if self.exact_search(nei.as_slice()) != K_NOT_FOUND {
+                return true
+            }
+        }
+        false
+    }
+
+    pub fn get_neighbors(&self, key: &key_t, th: &TrajectoryHash) -> Vec<Vec<u8>> {
+
+        let mut vec = Vec::with_capacity(EXTEND_NUMBER);
+        let value: u128 = read_be_u128(key);
+
+        // tiles to hash values
+        for position in ACCURATE_GRID {
+            let bytes = u128_to_bytes(th.calc(value, position), th.byte_length);
+            vec.push(bytes);
+        }  
+        vec
+
+    }
+}
+
+pub struct TrajectoryHash {
+    byte_length: usize,
+    pub mask_lists: [Vec<u128>; 3], // ascend order
+}
+
+impl TrajectoryHash {
+    pub fn new(byte_length: usize, geo_length: usize, time_length: usize) -> Self {
+        let mut geo_lng_mask = 0b100u128;
+        let mut geo_lat_mask = 0b010u128;
+        let mut time_mask    = 0b001u128;
+
+        let diff = (geo_length as i32) - (time_length as i32);
+        let mut mask_lists = [Vec::new(), Vec::new(), Vec::new()];
+        if diff >= 0 {
+            for _ in 0..time_length {
+                mask_lists[0].push(geo_lng_mask);
+                geo_lng_mask <<= 3;
+                mask_lists[1].push(geo_lat_mask);
+                geo_lat_mask <<= 3;
+                mask_lists[2].push(time_mask);
+                time_mask <<= 3;
+            }
+            geo_lng_mask >>= 3;
+            geo_lng_mask <<= 2;
+            geo_lat_mask >>= 3;
+            geo_lat_mask <<= 2;
+            for _ in 0..diff {
+                mask_lists[0].push(geo_lng_mask);
+                geo_lng_mask <<= 2;
+                mask_lists[1].push(geo_lat_mask);
+                geo_lat_mask <<= 2;
+            }
+        } else {
+            for _ in 0..geo_length {
+                mask_lists[0].push(geo_lng_mask);
+                geo_lng_mask <<= 3;
+                mask_lists[1].push(geo_lat_mask);
+                geo_lat_mask <<= 3;
+                mask_lists[2].push(time_mask);
+                time_mask <<= 3;
+            }
+            for _ in 0..(-diff) {
+                mask_lists[2].push(time_mask);
+                time_mask <<= 1;
+            }
+        }
+
+        TrajectoryHash { byte_length, mask_lists }
+    }
+
+    pub fn calc(&self, value: u128, pos: [i32;3]) -> u128 {
+        let mut updated = value;
+        for (dimension, direction) in pos.iter().enumerate() {
+            match direction {
+                -1 => {
+                    for mask in self.mask_lists[dimension].iter() {
+                        if value & mask != 0 {
+                            updated &= !mask;
+                            break;
+                        } else {
+                            updated |= mask;
+                        }
+                    }
+                },
+                0 => {},
+                1 => {
+                    for mask in self.mask_lists[dimension].iter() {
+                        if value & mask == 0 {
+                            updated |= mask;
+                            break;
+                        } else {
+                            updated &= !mask;
+                        }
+                    }
+                },
+                _ => panic!("invalid value of direction!")
+            }
+        }
+        updated
+    }
+}
+
+fn read_be_u128(input: &[u8]) -> u128 {
+    let mut output = 0u128;
+    let digit = input.len() - 1;
+    for (i, byte) in input.iter().enumerate() {
+        output |= (*byte as u128) << 8*(digit - i);
+    }
+    output
+}
+
+fn u128_to_bytes(value: u128, byte_length: usize) -> Vec<u8> {
+    value.to_be_bytes()[16-byte_length..].to_vec()
 }

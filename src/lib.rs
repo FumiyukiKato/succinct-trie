@@ -15,7 +15,9 @@ mod popcount;
 mod rank;
 mod select;
 mod suffix;
+mod cache;
 pub mod trie;
+
 
 #[cfg(test)]
 mod tests {
